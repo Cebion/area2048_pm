@@ -11,6 +11,7 @@ private import core.stdc.stdio;
 private	import	bindbc.sdl;
 private	import	opengl;
 private	import	define;
+private import core.stdc.stdio;
 
 version(PANDORA) version = FORCE_FULLSCREEN;
 version(PYRA) version = FORCE_FULLSCREEN;
@@ -60,8 +61,8 @@ int		initSDL()
     }
 
 	uint	videoFlags;
-	//videoFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP;
-	videoFlags = SDL_WINDOW_OPENGL;
+	videoFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP;
+	//videoFlags = SDL_WINDOW_OPENGL;
 	//videoFlags = SDL_WINDOW_OPENGL | SDL_RESIZABLE;
 	version (FORCE_FULLSCREEN) {
 		videoFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -147,46 +148,57 @@ void	flipSDL()
 }
 
 
-void	resizedSDL(int w, int h)
+void    resizedSDL(int w, int h)
 {
-	screenStartx = 0;
-	screenStarty = 0;
-	screenWidth = w;
-	screenHeight = h;
-	static if(SDL_VERSION_ATLEAST(2, 0, 1)) {
-		SDL_version linked;
-		SDL_GetVersion(&linked);
-		if (SDL_version(linked.major, linked.minor, linked.patch) >= SDL_version(2, 0, 1)) {
-			int glwidth, glheight;
-			SDL_GL_GetDrawableSize(window, &glwidth, &glheight);
-			if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP) {
-				if ((cast(float)(glwidth)) / w <= (cast(float)(glheight)) / h) {
-					screenStartx = 0;
-					screenWidth = glwidth;
-					screenHeight = (glwidth * h) / w;
-					screenStarty = (glheight - screenHeight) / 2;
-				} else {
-					screenStarty = 0;
-					screenHeight = glheight;
-					screenWidth = (glheight * w) / h;
-					screenStartx = (glwidth - screenWidth) / 2;
-				}
-			} else {
-				screenWidth = glwidth;
-				screenHeight = glheight;
-			}
-		}
-	}
-	glViewport(screenStartx, screenStarty, screenWidth, screenHeight);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	if (nearPlane != 0.0f) {
-		glFrustum(-nearPlane,nearPlane,
-				  -nearPlane * h / w,
-				   nearPlane * h / w,
-				  0.1f, farPlane);
-	}
-	glMatrixMode(GL_MODELVIEW);
+   printf("Initial: startx=%d starty=%d width=%d height=%d\n", screenStartx, screenStarty, screenWidth, screenHeight);
+   screenStartx = 0;
+   screenStarty = 0;
+   screenWidth = w;
+   screenHeight = h;
+   static if(SDL_VERSION_ATLEAST(2, 0, 1)) {
+       SDL_version linked;
+       SDL_GetVersion(&linked);
+       if (SDL_version(linked.major, linked.minor, linked.patch) >= SDL_version(2, 0, 1)) {
+           int glwidth, glheight;
+           int winwidth, winheight;
+           SDL_GL_GetDrawableSize(window, &glwidth, &glheight);
+           SDL_GetWindowSize(window, &winwidth, &winheight);
+           printf("Drawable size: %dx%d\n", glwidth, glheight);
+           printf("Window size: %dx%d\n", winwidth, winheight);
+           printf("Requested size: %dx%d\n", w, h);
+           if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+               printf("Window is fullscreen desktop\n");
+               SDL_DisplayMode mode;
+               SDL_GetCurrentDisplayMode(0, &mode);
+               printf("Display mode: %dx%d\n", mode.w, mode.h);
+               if ((cast(float)(mode.w)) / w <= (cast(float)(mode.h)) / h) {
+                   screenStartx = 0;
+                   screenWidth = mode.w;
+                   screenHeight = (mode.w * h) / w;
+                   screenStarty = (mode.h - screenHeight) / 2;
+               } else {
+                   screenStarty = 0;
+                   screenHeight = mode.h;
+                   screenWidth = (mode.h * w) / h;
+                   screenStartx = (mode.w - screenWidth) / 2;
+               }
+           } else {
+               screenWidth = glwidth;
+               screenHeight = glheight;
+           }
+       }
+   }
+   printf("Final: startx=%d starty=%d width=%d height=%d\n", screenStartx, screenStarty, screenWidth, screenHeight);
+   glViewport(screenStartx, screenStarty, screenWidth, screenHeight);
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   if (nearPlane != 0.0f) {
+       glFrustum(-nearPlane,nearPlane,
+                 -nearPlane * h / w,
+                  nearPlane * h / w,
+                 0.1f, farPlane);
+   }
+   glMatrixMode(GL_MODELVIEW);
 }
 
 float	getPointX(float p,float z)
