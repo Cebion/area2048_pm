@@ -47,36 +47,14 @@ ubyte*			keys;
 private	int	pads_old;
 private	int	rep_cnt;
 
-int		initPAD()
+int initPAD()
 {
-	if(SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0){
-		return	0;
-    }
-
-	joys = null;
-	version (PANDORA) {
-		foreach (i; 0..SDL_NumJoysticks()) {
-			if (to!string(SDL_JoystickNameForIndex(i)) == "nub0") {
-				joys = SDL_JoystickOpen(i);
-			}
-		}
-	} else {
-		if(SDL_NumJoysticks() > 0){
-			joys = SDL_JoystickOpen(0);
-		}
-	}
-
-	if (joys){
-		SDL_JoystickEventState(SDL_ENABLE);
-	}
-
-	pad_type = 0;
-	trgs = 0;
-	reps = 0;
-
-	rep_cnt = 0;
-
-	return	1;
+    joys = null;
+    pad_type = 0;
+    trgs = 0;
+    reps = 0;
+    rep_cnt = 0;
+    return 1;
 }
 
 

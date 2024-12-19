@@ -19,4 +19,4 @@ cd src
 find . -maxdepth 1 -name \*.d -type f -exec gdc $FLAGS \{\} \;
 cd ..
 
-gdc -o AREA2048 -s -Wl,--gc-sections -static-libphobos import/*.o* import/sdl/*.o* import/bindbc/sdl/*.o* src/*.o* -lGL -lSDL2_mixer -lSDL2 -lbulletml_d -L./lib/x64
+gdc -o AREA2048 -s -Wl,--gc-sections -static-libphobos import/*.o* import/sdl/*.o* import/bindbc/sdl/*.o* src/*.o* -lGL -lSDL2_mixer -lSDL2 -L./libbulletml/bulletml/src -lbulletml
